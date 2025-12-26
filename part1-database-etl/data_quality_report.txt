@@ -1,0 +1,5 @@
+===== ETL SUMMARY =====
+CUSTOMERS : {'processed': 26, 'duplicates_removed': 1, 'missing_handled': 5}
+PRODUCTS : {'processed': 20, 'duplicates_removed': 0, 'missing_handled': 4}
+SALES : {'processed': 41, 'duplicates_removed': 1, 'missing_handled': 7}
+LOADED : {'customers': 25, 'products': 19, 'orders': 33, 'order_items': 33}

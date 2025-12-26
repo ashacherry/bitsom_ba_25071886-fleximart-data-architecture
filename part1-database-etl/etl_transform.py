@@ -1,0 +1,286 @@
+# =====================================================
+# FLEXIMART ETL PIPELINE
+# RAW → TRANSFORM → LOAD (WITH ERROR HANDLING & LOGGING)
+# =====================================================
+
+import pandas as pd
+import numpy as np
+import re
+import csv
+from datetime import datetime
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+
+# =====================================================
+# CONFIG
+# =====================================================
+BASE_PATH = r"C:\Users\ashac\OneDrive\Documents\Graded Assignment 3"
+LOG_FILE  = f"{BASE_PATH}\\etl_log.csv"
+
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "gkk123GKK"
+MYSQL_HOST = "localhost"
+MYSQL_PORT = "3306"
+MYSQL_DB = "fleximart"
+
+engine = create_engine(
+    f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+)
+
+import os
+import csv
+from datetime import datetime
+
+os.makedirs(BASE_PATH, exist_ok=True)
+
+LOG_FILE = os.path.join(BASE_PATH, "etl_log.csv")
+
+def log_event(stage, level, message):
+    with open(LOG_FILE, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([datetime.now(), stage, level, message])
+
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["timestamp", "stage", "level", "message"])
+
+log_event("STARTUP", "INFO", "ETL script started")
+
+# =====================================================
+# METRICS (FOR TERMINAL OUTPUT)
+# =====================================================
+metrics = {
+    "customers": {"processed": 0, "duplicates_removed": 0, "missing_handled": 0},
+    "products":  {"processed": 0, "duplicates_removed": 0, "missing_handled": 0},
+    "sales":     {"processed": 0, "duplicates_removed": 0, "missing_handled": 0},
+    "loaded":    {"customers": 0, "products": 0, "orders": 0, "order_items": 0}
+}
+
+# =====================================================
+# EXTRACT
+# =====================================================
+try:
+    customers_df = pd.read_csv(f"{BASE_PATH}\\customers_raw.csv")
+    products_df  = pd.read_csv(f"{BASE_PATH}\\products_raw.csv")
+    sales_df     = pd.read_csv(f"{BASE_PATH}\\sales_raw.csv")
+
+    metrics["customers"]["processed"] = len(customers_df)
+    metrics["products"]["processed"]  = len(products_df)
+    metrics["sales"]["processed"]     = len(sales_df)
+
+    log_event("EXTRACT", "INFO", "Raw CSV files loaded successfully")
+
+except Exception as e:
+    log_event("EXTRACT", "ERROR", str(e))
+    raise
+
+# =====================================================
+# TRANSFORM: CUSTOMERS
+# =====================================================
+customers_df["customer_code"] = customers_df["customer_id"]
+
+customers_df["email"] = customers_df["email"].replace(r"^\s*$", np.nan, regex=True)
+missing_email_count = customers_df["email"].isna().sum()
+
+customers_df["email"] = customers_df.apply(
+    lambda r: f"{r['customer_code']}_unknown@dummy.com"
+    if pd.isna(r["email"]) else r["email"],
+    axis=1
+)
+
+metrics["customers"]["missing_handled"] = int(missing_email_count)
+
+before = len(customers_df)
+customers_df = customers_df.drop_duplicates(subset=["email"], keep="first")
+metrics["customers"]["duplicates_removed"] = before - len(customers_df)
+
+def standardize_phone(phone):
+    if pd.isna(phone):
+        return None
+    digits = re.sub(r"\D", "", str(phone))
+    return "+91-" + digits[-10:] if len(digits) >= 10 else None
+
+customers_df["phone"] = customers_df["phone"].apply(standardize_phone)
+
+customers_df["registration_date"] = pd.to_datetime(
+    customers_df["registration_date"],
+    errors="coerce",
+    format="mixed",
+    dayfirst=True
+).dt.strftime("%Y-%m-%d")
+
+customers_mysql_df = customers_df.drop(columns=["customer_id", "customer_code"])
+
+# =====================================================
+# TRANSFORM: PRODUCTS
+# =====================================================
+products_df["product_code"] = products_df["product_id"]
+
+before = len(products_df)
+products_df = products_df.drop_duplicates(subset=["product_name"], keep="first")
+metrics["products"]["duplicates_removed"] = before - len(products_df)
+
+price_missing = products_df["price"].isna().sum()
+products_df["price"] = products_df["price"].fillna(products_df["price"].mean())
+metrics["products"]["missing_handled"] += int(price_missing)
+
+stock_missing = products_df["stock_quantity"].isna().sum()
+products_df = products_df.dropna(subset=["stock_quantity"])
+metrics["products"]["missing_handled"] += int(stock_missing)
+
+products_df["category"] = (
+    products_df["category"].astype(str).str.strip().str.lower().str.capitalize()
+)
+
+products_mysql_df = products_df.drop(columns=["product_id", "product_code"])
+
+# =====================================================
+# LOAD: DIMENSION TABLES (WITH ERROR HANDLING)
+# =====================================================
+try:
+    with engine.begin() as conn:
+        conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))
+        conn.execute(text("TRUNCATE TABLE order_items"))
+        conn.execute(text("TRUNCATE TABLE orders"))
+        conn.execute(text("TRUNCATE TABLE customers"))
+        conn.execute(text("TRUNCATE TABLE products"))
+        conn.execute(text("SET FOREIGN_KEY_CHECKS=1"))
+
+    customers_mysql_df.to_sql("customers", engine, if_exists="append", index=False)
+    products_mysql_df.to_sql("products", engine, if_exists="append", index=False)
+
+    metrics["loaded"]["customers"] = len(customers_mysql_df)
+    metrics["loaded"]["products"]  = len(products_mysql_df)
+
+    log_event("LOAD_DIMENSIONS", "INFO", "Customers & Products loaded successfully")
+
+except SQLAlchemyError as e:
+    log_event("LOAD_DIMENSIONS", "ERROR", str(e))
+    raise
+
+# =====================================================
+# READ BACK SURROGATE KEYS
+# =====================================================
+customers_db = pd.read_sql("SELECT customer_id, email FROM customers", engine)
+products_db  = pd.read_sql("SELECT product_id, product_name FROM products", engine)
+
+customer_lookup = customers_df[["customer_code", "email"]].merge(
+    customers_db, on="email", how="left"
+)[["customer_code", "customer_id"]]
+
+product_lookup = products_df[["product_code", "product_name"]].merge(
+    products_db, on="product_name", how="left"
+)[["product_code", "product_id"]]
+
+# =====================================================
+# TRANSFORM: SALES
+# =====================================================
+before = len(sales_df)
+sales_df = sales_df.drop_duplicates()
+metrics["sales"]["duplicates_removed"] = before - len(sales_df)
+
+sales_df["transaction_date"] = pd.to_datetime(
+    sales_df["transaction_date"],
+    errors="coerce",
+    format="mixed",
+    dayfirst=True
+).dt.strftime("%Y-%m-%d")
+
+sales_df["status"] = sales_df["status"].fillna("Pending")
+
+sales_df = sales_df.merge(
+    customer_lookup,
+    left_on="customer_id",
+    right_on="customer_code",
+    how="left"
+).rename(columns={"customer_id_y": "customer_id"}).drop(
+    columns=["customer_id_x", "customer_code"]
+)
+
+sales_df = sales_df.merge(
+    product_lookup,
+    left_on="product_id",
+    right_on="product_code",
+    how="left"
+).rename(columns={"product_id_y": "product_id"}).drop(
+    columns=["product_id_x", "product_code"]
+)
+
+missing_refs = sales_df[["customer_id", "product_id"]].isna().any(axis=1).sum()
+metrics["sales"]["missing_handled"] = int(missing_refs)
+
+if missing_refs > 0:
+    print(f"\n⚠️ Dropping {missing_refs} sales rows due to missing FK mappings")
+
+sales_df = sales_df.dropna(subset=["customer_id", "product_id"])
+sales_df["customer_id"] = sales_df["customer_id"].astype(int)
+sales_df["product_id"] = sales_df["product_id"].astype(int)
+
+sales_df["subtotal"] = sales_df["quantity"] * sales_df["unit_price"]
+
+# =====================================================
+# LOAD: ORDERS & ORDER_ITEMS (ERROR HANDLED)
+# =====================================================
+try:
+    orders_df = (
+        sales_df
+        .groupby(
+            ["transaction_id", "customer_id", "transaction_date", "status"],
+            as_index=False
+        )
+        .agg(total_amount=("subtotal", "sum"))
+    )
+
+    orders_df.insert(0, "order_id", range(1, len(orders_df) + 1))
+
+    orders_mysql_df = orders_df.rename(
+        columns={"transaction_date": "order_date"}
+    )[["order_id", "customer_id", "order_date", "status", "total_amount"]]
+
+    orders_mysql_df.to_sql("orders", engine, if_exists="append", index=False)
+    metrics["loaded"]["orders"] = len(orders_mysql_df)
+
+    sales_with_orders = sales_df.merge(
+        orders_df[["transaction_id", "order_id"]],
+        on="transaction_id",
+        how="inner"
+    )
+
+    order_items_mysql_df = sales_with_orders[
+        ["order_id", "product_id", "quantity", "unit_price", "subtotal"]
+    ]
+
+    order_items_mysql_df.to_sql("order_items", engine, if_exists="append", index=False)
+    metrics["loaded"]["order_items"] = len(order_items_mysql_df)
+
+    log_event("LOAD_FACTS", "INFO", "Orders & Order Items loaded successfully")
+
+except SQLAlchemyError as e:
+    log_event("LOAD_FACTS", "ERROR", str(e))
+    raise
+
+# =====================================================
+# FINAL TERMINAL OUTPUT (UNCHANGED)
+# =====================================================
+print("\n===== ETL SUMMARY =====")
+for k, v in metrics.items():
+    print(k.upper(), ":", v)
+
+print("\n✅ ETL completed successfully.")
+
+# =====================================================
+# DATA QUALITY REPORT (TEXT FILE OUTPUT)
+# =====================================================
+REPORT_FILE = os.path.join(BASE_PATH, "data_quality_report.txt")
+
+with open(REPORT_FILE, "w", encoding="utf-8") as f:
+    f.write("===== ETL SUMMARY =====\n")
+    f.write(f"CUSTOMERS : {metrics['customers']}\n")
+    f.write(f"PRODUCTS : {metrics['products']}\n")
+    f.write(f"SALES : {metrics['sales']}\n")
+    f.write(f"LOADED : {metrics['loaded']}\n")
+
+print("\n✅Data quality report saved.")
+
+log_event("REPORT", "INFO", "Data quality report generated")
