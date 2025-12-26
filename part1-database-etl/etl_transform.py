@@ -14,38 +14,44 @@ from sqlalchemy.exc import SQLAlchemyError
 # =====================================================
 # CONFIG
 # =====================================================
-BASE_PATH = r"C:\Users\ashac\OneDrive\Documents\Graded Assignment 3"
-LOG_FILE  = f"{BASE_PATH}\\etl_log.csv"
-
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "gkk123GKK"
-MYSQL_HOST = "localhost"
-MYSQL_PORT = "3306"
-MYSQL_DB = "fleximart"
-
-engine = create_engine(
-    f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
-)
-
 import os
 import csv
 from datetime import datetime
 
-os.makedirs(BASE_PATH, exist_ok=True)
+# =====================================================
+# PATH CONFIG (PORTABLE & REPO-RELATIVE)
+# =====================================================
 
-LOG_FILE = os.path.join(BASE_PATH, "etl_log.csv")
+# Project root (one level above this script)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Input data directory
+DATA_PATH = os.path.join(PROJECT_ROOT, "data")
+
+# Output directory (same folder as this script)
+OUTPUT_PATH = os.path.dirname(__file__)
+
+# Log file path
+LOG_FILE = os.path.join(OUTPUT_PATH, "etl_log.csv")
+
+
+# =====================================================
+# LOGGING SETUP
+# =====================================================
 
 def log_event(stage, level, message):
     with open(LOG_FILE, mode="a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([datetime.now(), stage, level, message])
 
+# Create log file header if not exists
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["timestamp", "stage", "level", "message"])
 
 log_event("STARTUP", "INFO", "ETL script started")
+
 
 # =====================================================
 # METRICS (FOR TERMINAL OUTPUT)
