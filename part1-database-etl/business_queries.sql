@@ -4,7 +4,7 @@
 -- total number of orders placed, and total amount spent. 
 -- Include only customers who have placed at least 2 orders 
 -- and spent more than ₹5,000 */
-
+USE fleximart;
 SELECT 
     c.first_name,
     c.last_name,
