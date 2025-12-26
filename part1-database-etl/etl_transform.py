@@ -52,6 +52,19 @@ if not os.path.exists(LOG_FILE):
 
 log_event("STARTUP", "INFO", "ETL script started")
 
+# =====================================================
+# DATABASE CONNECTION
+# =====================================================
+
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "gkk123GKK"
+MYSQL_HOST = "localhost"
+MYSQL_PORT = "3306"
+MYSQL_DB = "fleximart"
+engine = create_engine(
+    f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+)
+
 
 # =====================================================
 # METRICS (FOR TERMINAL OUTPUT)
@@ -63,9 +76,6 @@ metrics = {
     "loaded":    {"customers": 0, "products": 0, "orders": 0, "order_items": 0}
 }
 
-# =====================================================
-# EXTRACT
-# =====================================================
 # =====================================================
 # EXTRACT
 # =====================================================
@@ -281,7 +291,7 @@ print("\n✅ ETL completed successfully.")
 # =====================================================
 # DATA QUALITY REPORT (TEXT FILE OUTPUT)
 # =====================================================
-REPORT_FILE = os.path.join(BASE_PATH, "data_quality_report.txt")
+REPORT_FILE = os.path.join(OUTPUT_PATH, "data_quality_report.txt")
 
 with open(REPORT_FILE, "w", encoding="utf-8") as f:
     f.write("===== ETL SUMMARY =====\n")
