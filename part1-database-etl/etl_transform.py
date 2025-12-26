@@ -60,10 +60,13 @@ metrics = {
 # =====================================================
 # EXTRACT
 # =====================================================
+# =====================================================
+# EXTRACT
+# =====================================================
 try:
-    customers_df = pd.read_csv(f"{BASE_PATH}\\customers_raw.csv")
-    products_df  = pd.read_csv(f"{BASE_PATH}\\products_raw.csv")
-    sales_df     = pd.read_csv(f"{BASE_PATH}\\sales_raw.csv")
+    customers_df = pd.read_csv(os.path.join(DATA_PATH, "customers_raw.csv"))
+    products_df  = pd.read_csv(os.path.join(DATA_PATH, "products_raw.csv"))
+    sales_df     = pd.read_csv(os.path.join(DATA_PATH, "sales_raw.csv"))
 
     metrics["customers"]["processed"] = len(customers_df)
     metrics["products"]["processed"]  = len(products_df)
