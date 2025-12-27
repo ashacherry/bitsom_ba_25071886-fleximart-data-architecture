@@ -1,13 +1,13 @@
 # FlexiMart Data Architecture Project
 
-**Student Name:** [Your Name]
-**Student ID:** [Your ID]
-**Email:** [Your Email]
-**Date:** [Date]
+**Student Name:** Asha Cherian
+**Student ID:** bitsom_ba_25071886
+**Email:** ashacherry@gmail.com
+**Date:** 27-Dec-2025
 
 ## Project Overview
 
-[2-3 sentences describing what you built]
+I designed and implemented an end-to-end FlexiMart data architecture that ingests raw CSV data, performs robust data cleaning and transformations, and loads it into a MySQL star-schema warehouse using a Python-based ETL pipeline. I also built a MongoDB product catalog to handle flexible product attributes and embedded reviews, and version-controlled the entire solution on GitHub with clear documentation and reproducible scripts.
 
 ## Repository Structure
 ├── part1-database-etl/
@@ -29,8 +29,8 @@
 ## Technologies Used
 
 - Python 3.x, pandas, mysql-connector-python
-- MySQL 8.0 / PostgreSQL 14
-- MongoDB 6.0
+- MySQL 8.0 
+- MongoDB 2.5.10
 
 ## Setup Instructions
 
