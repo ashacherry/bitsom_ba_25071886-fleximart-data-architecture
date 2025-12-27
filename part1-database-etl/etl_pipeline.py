@@ -319,6 +319,6 @@ with open(REPORT_FILE, "w", encoding="utf-8") as f:
     f.write(f"SALES : {metrics['sales']}\n")
     f.write(f"LOADED : {metrics['loaded']}\n")
 
-print("\n✅Data quality report saved.")
+print("\nData quality report saved.")
 
 log_event("REPORT", "INFO", "Data quality report generated")
