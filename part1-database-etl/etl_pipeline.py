@@ -305,7 +305,7 @@ print("\n===== ETL SUMMARY =====")
 for k, v in metrics.items():
     print(k.upper(), ":", v)
 
-print("\n✅ ETL completed successfully.")
+print("\n ETL completed successfully.")
 
 # =====================================================
 # DATA QUALITY REPORT (TEXT FILE OUTPUT)
