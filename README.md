@@ -45,9 +45,18 @@ mysql -u root -p -e "CREATE DATABASE fleximart_dw;"
 python part1-database-etl/etl_pipeline.py
 
 # Run Part 1 - Business Queries
-mysql -u root -p fleximart < part1-database-etl/business_queries.sql
+# > Note: If you run as is, MySQL commands prompt for a password (`-p`).  
+# > Please Use your local MySQL credentials when executing the scripts.
+# If using bash
+mysql -u root -p fleximart < part1-database-etl/business_queries.sql 
+# if using Powershell
+mysql -u root -p fleximart -e "source part1-database-etl/business_queries.sql"
+
 
 # Run Part 3 - Data Warehouse
+# > Note: If you run as is, MySQL commands prompt for a password (`-p`).  
+# > Please Use your local MySQL credentials when executing the scripts.
+
 mysql -u root -p fleximart_dw < part3-datawarehouse/warehouse_schema.sql
 mysql -u root -p fleximart_dw < part3-datawarehouse/warehouse_data.sql
 mysql -u root -p fleximart_dw < part3-datawarehouse/analytics_queries.sql
@@ -58,10 +67,39 @@ mysql -u root -p fleximart_dw < part3-datawarehouse/analytics_queries.sql
 mongosh < part2-nosql/mongodb_operations.js
 
 ## Key Learnings
-
-[3-4 sentences on what you learned]
+1. From the part 1 
+- I learnt the process of transformation and little bit of pythom programming.
+- I learnt, how to handle missing values depending on the situation - whether to fill with 0/mean/median.
+- On the whole, I understood how the entire ETL process works
+2. From part 2
+- how a JSON file is structured and unstructured 
+- how NoSQl process these information
+3. From part 3
+- Learned how to design a star schema by separating transactional data into fact tables and descriptive data into dimension tables.
+- Understood the importance of defining the correct grain at the transaction line-item level for accurate analysis.
+- Learned why surrogate keys are used in data warehouses to improve performance and handle changes in source systems.
+- Gained clarity on how dimensions enable drill-down and roll-up analysis across date, product, and customer attributes.
+- Understood how data warehouse design differs from operational databases, focusing on analytics rather than transactions. 
 
 ## Challenges Faced
 
-1. [Challenge and solution]
-2. [Challenge and solution]
+Part 1: Database & ETL Pipeline
+
+1. Challenge: This was my first experience building an end-to-end ETL pipeline, and initially it was difficult to understand how raw data, transformation logic, and database loading fit together as a single flow.
+Solution: Broke the pipeline into clear Extract, Transform, and Load stages and implemented them step by step, which helped in understanding data movement and dependencies.
+
+2. Challenge: Debugging the pipeline was challenging because the script often ran without visible terminal output, making it hard to know whether each step executed successfully.
+Solution: Added structured logging to record key pipeline stages and errors, which made it easier to track execution progress and identify failures.
+
+Part 2: NoSQL (MongoDB)
+
+1.Challenge: As this was my first exposure to a NoSQL database, it was initially difficult to understand how document-based data modeling differs from relational table design.
+Solution: Studied MongoDB’s document structure and implemented embedded documents for product reviews, which clarified how NoSQL supports flexible schemas.
+
+2. Challenge: Executing MongoDB scripts varied across environments, especially when using PowerShell instead of Bash, leading to command execution errors.
+Solution: Learned the correct PowerShell-compatible commands and updated documentation to include environment-specific execution instructions.
+
+Part 3: Data Warehouse & Star Schema
+
+Challenge: Ensuring stable joins and consistent analytics while source system identifiers could change over time.
+Solution: Used surrogate keys in dimension tables to decouple analytical relationships from operational identifiers and improve query performance.
