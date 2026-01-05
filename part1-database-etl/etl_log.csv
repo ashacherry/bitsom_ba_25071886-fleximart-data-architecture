@@ -7,3 +7,9 @@ timestamp,stage,level,message
 2025-12-26 14:19:42.356494,LOAD_DIMENSIONS,INFO,Customers & Products loaded successfully
 2025-12-26 14:19:42.456871,LOAD_FACTS,INFO,Orders & Order Items loaded successfully
 2025-12-26 14:19:42.461353,REPORT,INFO,Data quality report generated
+2026-01-05 11:51:53.854900,STARTUP,INFO,ETL script started
+2026-01-05 11:57:14.326555,STARTUP,INFO,ETL script started
+2026-01-05 11:58:39.565036,EXTRACT,INFO,Raw CSV files loaded successfully
+2026-01-05 11:58:39.910515,LOAD_DIMENSIONS,INFO,Customers & Products loaded successfully
+2026-01-05 11:58:39.949950,LOAD_FACTS,INFO,Orders & Order Items loaded successfully
+2026-01-05 11:58:39.951595,REPORT,INFO,Data quality report generated

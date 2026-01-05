@@ -56,14 +56,22 @@ log_event("STARTUP", "INFO", "ETL script started")
 # DATABASE CONNECTION
 # =====================================================
 
+import os
+from getpass import getpass
+from sqlalchemy import create_engine
+
 MYSQL_USER = "root"
-MYSQL_PASSWORD = "gkk123GKK"
 MYSQL_HOST = "localhost"
 MYSQL_PORT = "3306"
 MYSQL_DB = "fleximart"
+
+# Securely prompt for password
+MYSQL_PASSWORD = getpass("Enter MySQL password: ")
+
 engine = create_engine(
     f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
 )
+
 
 
 # =====================================================
