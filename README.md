@@ -10,6 +10,7 @@
 I designed and implemented an end-to-end FlexiMart data architecture that ingests raw CSV data, performs robust data cleaning and transformations, and loads it into a MySQL star-schema warehouse using a Python-based ETL pipeline. I also built a MongoDB product catalog to handle flexible product attributes and embedded reviews, and version-controlled the entire solution on GitHub with clear documentation and reproducible scripts.
 
 ## Repository Structure
+```
 ├── part1-database-etl/
 │   ├── etl_pipeline.py
 │   ├── schema_documentation.md
@@ -25,6 +26,8 @@ I designed and implemented an end-to-end FlexiMart data architecture that ingest
 │   ├── warehouse_data.sql
 │   └── analytics_queries.sql
 └── README.md
+```
+
 
 ## Technologies Used
 
