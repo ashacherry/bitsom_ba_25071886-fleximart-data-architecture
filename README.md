@@ -1,9 +1,10 @@
 # FlexiMart Data Architecture Project
-
+```
 **Student Name:** Asha Cherian
 **Student ID:** bitsom_ba_25071886
 **Email:** ashacherry@gmail.com
 **Date:** 27-Dec-2025
+```
 
 ## Project Overview
 
