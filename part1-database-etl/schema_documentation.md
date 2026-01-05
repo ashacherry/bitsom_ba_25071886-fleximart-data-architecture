@@ -118,11 +118,11 @@ select * from products limit 3;
 ### orders
 select * from orders limit 3;
 
-order_id | customer_id | order_date  | total_amount | status
--------------------------------------------------------------
-1        | 1           | 2024-01-15  | 45999.00     | Completed
-2        | 2           | 2024-01-16  | 5998.00      | Completed
-3        | 3           | 2024-01-15  | 52999.00     | Completed
+| order_id | customer_id | order_date  | total_amount | status    |
+|----------|-------------|-------------|--------------|-----------|
+| 1        | 1           | 2024-01-15  | 45999.00     | Completed |
+| 2        | 2           | 2024-01-16  | 5998.00      | Completed |
+| 3        | 3           | 2024-01-15  | 52999.00     | Completed |
 
 
 ---
@@ -131,8 +131,8 @@ order_id | customer_id | order_date  | total_amount | status
 
 select * from order_items limit 3;
 
-order_item_id | order_id | product_id | quantity | unit_price | subtotal
-----------------------------------------------------------------------------
-1             | 1        | 1          | 1        | 45999.00   | 45999.00
-2             | 2        | 4          | 2        | 2999.00    | 5998.00
-3             | 3        | 6          | 1        | 52999.00   | 52999.00
+| order_item_id | order_id | product_id | quantity | unit_price | subtotal |
+|---------------|----------|------------|----------|------------|----------|
+| 1             | 1        | 1          | 1        | 45999.00   | 45999.00 |
+| 2             | 2        | 4          | 2        | 2999.00    | 5998.00  |
+| 3             | 3        | 6          | 1        | 52999.00   | 52999.00 |
