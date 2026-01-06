@@ -23,3 +23,8 @@ timestamp,stage,level,message
 2026-01-06 13:52:17.275838,LOAD_DIMENSIONS,ERROR,"(mysql.connector.errors.ProgrammingError) 1146 (42S02): Table 'fleximart.order_items' doesn't exist
 [SQL: TRUNCATE TABLE order_items]
 (Background on this error at: https://sqlalche.me/e/20/f405)"
+2026-01-06 14:03:36.508247,STARTUP,INFO,ETL script started
+2026-01-06 14:03:40.194712,EXTRACT,INFO,Raw CSV files loaded successfully
+2026-01-06 14:03:40.704044,LOAD_DIMENSIONS,INFO,Customers & Products loaded successfully
+2026-01-06 14:03:40.794624,LOAD_FACTS,INFO,Orders & Order Items loaded successfully
+2026-01-06 14:03:40.798862,REPORT,INFO,Data quality report generated
