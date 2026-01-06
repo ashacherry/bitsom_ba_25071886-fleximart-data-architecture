@@ -94,7 +94,7 @@ python part1-database-etl/etl_pipeline.py
 # Run Part 1 - Business Queries
 # > Note: If you run as is, MySQL commands prompt for a password (`-p`).  
 # > Please Use your local MySQL credentials when executing the scripts.
-# If using bash
+# if you are using command prompt
 mysql -u root -p fleximart < part1-database-etl/business_queries.sql 
 # if using Powershell
 mysql -u root -p fleximart -e "source part1-database-etl/business_queries.sql"
@@ -103,15 +103,22 @@ mysql -u root -p fleximart -e "source part1-database-etl/business_queries.sql"
 # Run Part 3 - Data Warehouse
 # > Note: If you run as is, MySQL commands prompt for a password (`-p`).  
 # > Please Use your local MySQL credentials when executing the scripts.
-
+# if you are using  command prompt
 mysql -u root -p fleximart_dw < part3-datawarehouse/warehouse_schema.sql
 mysql -u root -p fleximart_dw < part3-datawarehouse/warehouse_data.sql
 mysql -u root -p fleximart_dw < part3-datawarehouse/analytics_queries.sql
 
+#if you are using powershell
+Get-Content part3-datawarehouse/warehouse_schema.sql | mysql -u root -p fleximart_dw
+Get-Content part3-datawarehouse/warehouse_data.sql | mysql -u root -p fleximart_dw
+Get-Content part3-datawarehouse/analytics_queries.sql | mysql -u root -p fleximart_dw
 
 ### MongoDB Setup
-
+#run from command prompt
 mongosh < part2-nosql/mongodb_operations.js
+#if you are using powershell
+Get-Content part2-nosql/mongodb_operations.js | mongosh
+
 
 ## Key Learnings
 1. From the part 1 
